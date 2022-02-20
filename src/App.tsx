@@ -2,12 +2,32 @@ import * as solanaWeb3 from "@solana/web3.js";
 import { useEffect, useState } from "react";
 import "./App.css";
 
+const TEST_GIFS = [
+  "https://c.tenor.com/a3zQRRj3b_0AAAAd/test-peanuts-movie.gif",
+  "https://c.tenor.com/a3zQRRj3b_0AAAAd/test-peanuts-movie.gif",
+  "https://c.tenor.com/a3zQRRj3b_0AAAAd/test-peanuts-movie.gif",
+  "https://c.tenor.com/a3zQRRj3b_0AAAAd/test-peanuts-movie.gif",
+  ,
+];
+
 function App() {
   const [walletAddress, setWalletAddress] = useState(null);
-  /*
-   * This function holds the logic for deciding if a Phantom Wallet is
-   * connected or not
-   */
+  const [inputValue, setInputValue] = useState("");
+  const [gifList, setGifList] = useState<any>([]);
+
+  const onInputChange = (event: any) => {
+    const { value } = event.target;
+    setInputValue(value);
+  };
+  const sendGif = async () => {
+    if (inputValue.length > 0) {
+      setGifList([...gifList, inputValue]);
+      setInputValue("");
+    } else {
+      console.log("Empty input. Try again.");
+    }
+  };
+
   const checkIfWalletIsConnected = async () => {
     try {
       const { solana }: any = window;
@@ -27,9 +47,6 @@ function App() {
             response.publicKey.toString()
           );
 
-          /*
-           * Set the user's publicKey in state to be used later!
-           */
           setWalletAddress(response.publicKey.toString());
         }
       } else {
@@ -49,6 +66,17 @@ function App() {
       setWalletAddress(response.publicKey.toString());
     }
   };
+
+  useEffect(() => {
+    if (walletAddress) {
+      console.log("Fetching GIF list...");
+
+      // Call Solana program here.
+
+      // Set state
+      setGifList(TEST_GIFS);
+    }
+  }, [walletAddress]);
 
   /*
    * When our component first mounts, let's check to see if we have a connected
@@ -74,6 +102,37 @@ function App() {
           >
             Connect to Wallet
           </button>
+        )}
+        {walletAddress && (
+          <>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                sendGif();
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Enter gif link!"
+                style={{ padding: 10 }}
+                value={inputValue}
+                onChange={onInputChange}
+              />
+              <button
+                type="submit"
+                style={{ padding: 10, background: "orange" }}
+              >
+                Submit
+              </button>
+            </form>
+            <div>
+              {gifList.map((gif: any) => (
+                <div key={gif}>
+                  <img src={gif} alt={gif} />
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </header>
     </div>
